@@ -1,0 +1,33 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux.hdl
+
+/**
+ * Demultiplexor:
+ * {a, b} = {in, 0} if sel == 0
+ *          {0, in} if sel == 1
+
+    in    sel   !sel    sel && in(=b)  !sel && in(=a)  a     b     
+    0     0     1       0              0               0     0     
+    1     0     1       0              1               1     0     
+    0     1     0       0              0               0     0     
+    1     1     0       1              0               0     1    
+
+    At least to me, the key to being able to do branches in
+    HDL is to have two variations of the selection bit and
+    use it to maintain the different values for the results
+    under different situations. The old ideas of conditional
+    branches from standard programming languages don't really
+    work here
+ */
+
+CHIP DMux {
+    IN in, sel;
+    OUT a, b;
+
+    PARTS:
+    Not(in=sel, out=notsel);
+    And(a=in, b=sel, out=b);
+    And(a=in, b=notsel, out=a);
+}

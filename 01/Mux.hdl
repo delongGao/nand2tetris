@@ -1,0 +1,32 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux.hdl
+
+/** 
+ * Multiplexor:
+ * out = a if sel == 0
+ *       b otherwise
+    sel   a     b     out       sel && b  !sel && a
+    0     0     0     0         0         0
+    0     0     1     0         0         0
+    0     1     0     1         0         1
+    0     1     1     1         0         1
+    1     0     0     0         0         0
+    1     0     1     1         1         0
+    1     1     0     0         0         0
+    1     1     1     1         1         0
+ */
+
+// this is too smart... the use of sel and notsel to preserve and ignore the value of a or b is so genuis
+
+CHIP Mux {
+    IN a, b, sel;
+    OUT out;
+
+    PARTS:
+    Not(in=sel, out=notsel);
+    And(a=sel, b=b, out=pr1); // possible result 1, when sel == 0, b will be ignored by this
+    And(a=notsel, b=a, out=pr2); // possible result 2, when sel == 1, a will be ignored by this
+    Or(a=pr1, b=pr2, out=out);
+}

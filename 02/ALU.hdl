@@ -26,6 +26,12 @@
 // if (out == 0) set zr = 1
 // if (out < 0) set ng = 1
 
+// NOTE: 
+//  - I like the use of Mux16 a lot!
+//  - Remember to read the test script, it's a very good doc on
+//    how actually use the ALU we just implemented to do various
+//    arithmetic and logic operations
+
 CHIP ALU {
     IN  
         x[16], y[16],  // 16-bit inputs        
@@ -42,5 +48,45 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // ============= without out stat bits ============
+    // zx
+    Mux16(a=x, b=false, sel=zx, out=tmpx1);
+    // nx
+    Not16(in=tmpx1, out=tmpnotx);
+    Mux16(a=tmpx1, b=tmpnotx, sel=nx, out=tmpx2);
+
+    // zy
+    Mux16(a=y, b=false, sel=zy, out=tmpy1);
+    // ny
+    Not16(in=tmpy1, out=tmpnoty);
+    Mux16(a=tmpy1, b=tmpnoty, sel=ny, out=tmpy2);
+
+    // f
+    Add16(a=tmpx2, b=tmpy2, out=xplusy);
+    And16(a=tmpx2, b=tmpy2, out=xandy);
+    Mux16(a=xandy, b=xplusy, sel=f, out=tmpout1);
+
+    // no
+    Not16(in=tmpout1, out=tmpnotout);
+    Mux16(a=tmpout1, b=tmpnotout, sel=no, out=out);
+
+    // NOTE: the trick is to use the same Mux16 multiple times...
+    //       tricky but makes very much sense.
+    // NOTE: 
+    //  - Remember: internal pins cannot be subscribed
+    //  - Remember: out pints could not be used as input pins
+    //  - Remember: you cannot think in normal programming langugaes
+    //              these restrictions makes much more sense when
+    //              you them as electirc componenets
+    // ============= output stat bits ============
+    Mux16(a=tmpout1, b=tmpnotout, sel=no, out[15]=ngflag);
+    Mux16(a=tmpout1, b=tmpnotout, sel=no, out[0..7]=firsthalfout);
+    Mux16(a=tmpout1, b=tmpnotout, sel=no, out[8..15]=secondhalfout);
+    Or8Way(in=firsthalfout, out=prezr1);
+    Or8Way(in=secondhalfout, out=prezr2);
+    Or(a=prezr1, b=prezr2, out=zrflag);
+    // I think it's better to use flag here in the price of one more parts
+    // this results in clear code
+    Mux(a=true, b=false, sel=zrflag, out=zr);
+    Mux(a=false, b=true, sel=ngflag, out=ng);
 }

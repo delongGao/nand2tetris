@@ -5,6 +5,23 @@
 
 /**
  * Computes the sum of three bits.
+
+ ========= truth table ==========
+ a  b  c    sum1    carry1    sum carry
+ 0  0  0    0       0         0   0
+ 0  1  0    1       0         1   0
+ 1  0  0    1       0         1   0
+ 1  1  0    0       1         0   1
+
+ 0  0  1    0       0         1   0
+ 0  1  1    1       0         0   1
+ 1  0  1    1       0         0   1
+ 1  1  1    0       1         1   1
+
+ a + b = tempsum1, tempcarry1
+ c + tempsum1 = sum, tempcarry2
+ carry = Or(tempcarry1, tempcarry2)
+
  */
 
 CHIP FullAdder {
@@ -13,5 +30,7 @@ CHIP FullAdder {
         carry;   // Left bit of a + b + c
 
     PARTS:
-    // Put you code here:
+    HalfAdder(a=a, b=b, sum=tempsum1, carry=tempcarry1);
+    HalfAdder(a=tempsum1, b=c, sum=sum, carry=tempcarry2);
+    Or(a=tempcarry1, b=tempcarry2, out=carry);
 }

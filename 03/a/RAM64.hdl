@@ -8,6 +8,13 @@
  * stored at the memory location specified by address. If load==1, then 
  * the in value is loaded into the memory location specified by address 
  * (the loaded value will be emitted to out from the next time step onward).
+
+ * NOTE: similar idea of using previous chips, this time using 8 RAM8 to
+ *       to build a RAM64. The key point is to understand the 6-bit address
+ *       could be broken into two parts: 
+ *       1. address[0..2]: determines which RAM8 to use
+ *       2. address[3..5]: used as the 3-bit address within selected RAM8
+
  */
 
 CHIP RAM64 {
@@ -15,5 +22,16 @@ CHIP RAM64 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // NOTE: IMPORTANT: for HDL, bits starts from right, so address[0] is
+    //       the right-most bit
+    DMux8Way(in=load, sel=address[3..5], a=load000, b=load001, c=load010, d=load011, e=load100, f=load101, g=load110, h=load111);
+    RAM8(in=in, load=load000, address=address[0..2], out=out000);
+    RAM8(in=in, load=load001, address=address[0..2], out=out001);
+    RAM8(in=in, load=load010, address=address[0..2], out=out010);
+    RAM8(in=in, load=load011, address=address[0..2], out=out011);
+    RAM8(in=in, load=load100, address=address[0..2], out=out100);
+    RAM8(in=in, load=load101, address=address[0..2], out=out101);
+    RAM8(in=in, load=load110, address=address[0..2], out=out110);
+    RAM8(in=in, load=load111, address=address[0..2], out=out111);
+    Mux8Way16(a=out000, b=out001, c=out010, d=out011, e=out100, f=out101, g=out110, h=out111, sel=address[3..5], out=out);
 }

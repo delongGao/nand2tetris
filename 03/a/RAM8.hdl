@@ -8,6 +8,21 @@
  * stored at the memory location specified by address. If load==1, then 
  * the in value is loaded into the memory location specified by address 
  * (the loaded value will be emitted to out from the next time step onward).
+
+ * NOTE: This is a very cool implementation, the use of DMux8way and Mux8way16
+ *       is definitely cool and very interesting. I like the fact that we are
+ *       really using the previous knowledge we have built to make the more
+ *       complicated logic to happen, naturally.
+ *
+ *       It also helps a lot for me to understand the underlying structure of
+ *       memory, in this case, 8 RAM literally uses 8 registers, and because
+ *       of the 3 bit(2 ** 3 = 8) address, each of the register is able to
+ *       maintain its own state as clock ticks
+ *
+ *       Another very cool feature of the memory is the constant time lookuo
+ *       and set based on the address, this is exactly because of the DMux8way
+ *       Mux8way16. Being able to get and set values at the vector level is
+ *       very cool.
  */
 
 CHIP RAM8 {
@@ -15,5 +30,14 @@ CHIP RAM8 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    DMux8Way(in=load, sel=address, a=load000, b=load001, c=load010, d=load011, e=load100, f=load101, g=load110, h=load111);
+    Register(in=in, load=load000, out=out000);
+    Register(in=in, load=load001, out=out001);
+    Register(in=in, load=load010, out=out010);
+    Register(in=in, load=load011, out=out011);
+    Register(in=in, load=load100, out=out100);
+    Register(in=in, load=load101, out=out101);
+    Register(in=in, load=load110, out=out110);
+    Register(in=in, load=load111, out=out111);
+    Mux8Way16(a=out000, b=out001, c=out010, d=out011, e=out100, f=out101, g=out110, h=out111, sel=address, out=out);
 }

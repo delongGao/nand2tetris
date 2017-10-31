@@ -16,5 +16,31 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // NOTE: 1. order matters here, since we want reset > load > inc
+    //       so the actual Mux16 should happen in reverse order
+    //       so that the latter ones could always override previous
+    //       ones if set
+    //       2. in order to preserve the previous values, we need
+    //       to load default values from previous gates
+    //       3. also in order for out to be updated in the next clock
+    //       we need to do register at the last step, or more precisely
+    //       set the out pin from a register, which guarantees the
+    //       time sequential order.
+    //       4. one very important property of pin, especially clocked pin:
+    //       you don't have to define the (internal) input pins before using them
+    //       as long as they have a definition (even later in the file), it
+    //       should work. This is actualy how most of the clocked
+    //       chips work. Because the actual sequential order of clocked chips
+    //       is a loop in the register chip, so which comes first or not
+    //       is all relative
+    // === inc
+    Inc16(in=pre, out=incpre);
+    Mux16(a=pre, b=incpre, sel=inc, out=incout);
+    // === load
+    Mux16(a=incout, b=in, sel=load, out=loadout);
+    // === reset
+    Mux16(a=loadout, b=false, sel=reset, out=cur);
+    // === feed into register to DELAY!!
+    // here the output of current is fed into pre pin, as a result, loop happens
+    Register(in=cur, load=true, out=pre, out=out);
 }

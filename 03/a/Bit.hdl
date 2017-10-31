@@ -7,6 +7,20 @@
  * 1-bit register:
  * If load[t] == 1 then out[t+1] = in[t]
  *                 else out does not change (out[t+1] = out[t])
+
+//  NOTE: the key point here is definitely understanding
+//        how to use DFF, and the most confusing part and
+//        different concept is the idea of a sequential
+//        logic v.s. combinational logic, which is also the
+//        core of DFF, DFF is essentially making the data flow
+//        becoming time-series: 
+//          1. input at this moment will become the output of next moment
+//          2. the typical usecase of DFF is to wire the output back to
+//             input, so that when clock ticks, the data flow will keep
+//             going and going.
+//          3. when we combine combinational and sequential logics, we
+//             need to understand that when compared with sequential
+//             logics, combinational logics is basically instantienous
  */
 
 CHIP Bit {
@@ -14,5 +28,16 @@ CHIP Bit {
     OUT out;
 
     PARTS:
-    // Put your code here:
+    // first version
+    // DFF(in=preout, out=curout);
+    // Mux(a=curout, b=in, sel=load, out=preout);
+    // DFF(in=preout, out=out);
+
+    // second version
+    // NOTE:
+    // 1. this version is so much better, because logically easier to understand and one less part
+    // 2. whenever want to DELAY, use DFF or Register
+    // 3. the out of cur is fed into pre pin to cause the loop
+    Mux(a=pre, b=in, sel=load, out=cur);
+    DFF(in=cur, out=pre, out=out);
 }
